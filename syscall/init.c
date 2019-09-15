@@ -12,6 +12,7 @@
 
 #include "init.h"
 
+int base__;
 int cntr = 0;
 
 void os_sighnd(int sig, siginfo_t *info, void *ctx) {
@@ -29,7 +30,7 @@ void os_sighnd(int sig, siginfo_t *info, void *ctx) {
 	}
 		
 	if ((instr_ptr & 0xff00) == 0x5500 || (instr_ptr & 0xff00) == 0x4d00) {
-		index += ((uint32_t) uc->uc_mcontext.gregs[REG_RBP]) - ((uint32_t) uc->uc_mcontext.gregs[REG_RBX]) >> 2;
+		index += ((uint32_t) uc->uc_mcontext.gregs[REG_RBP]) - base__ >> 2;
 	} 
 	int sgn_reg = ((instr_ptr & 0xffff) == 0x0b8b || (instr_ptr & 0xffff) == 0x4d8b) ? REG_RCX : REG_RDX;
 		
@@ -45,6 +46,7 @@ void init(void *base) {
 		.sa_flags = SA_RESTART,
 	};
 	sigemptyset(&act.sa_mask);
+	base__ = base;
 
 	if (-1 == sigaction(SIGSEGV, &act, NULL)) {
 		perror("signal set failed");
